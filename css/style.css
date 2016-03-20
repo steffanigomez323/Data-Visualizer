@@ -1,0 +1,10 @@
+h1, #datasetbox, #charts {
+	text-align: center;
+}
+
+#chart1, #chart2 {
+	border: 1px solid black;
+	width: 620px;
+	height: 600px;
+	display: inline-block;
+}
