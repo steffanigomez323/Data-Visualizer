@@ -1,29 +1,54 @@
+body {
+	background-color: #cdf4ff;
+}
+
 h1, #datasetbox, #charts {
 	text-align: center;
 }
 
 #chart1, #chart2 {
-	border: 1px solid black;
-	width: 620px;
+	border: 3px solid black;
+	border-radius: 5px;
+	background-color: white;
+	/*width: 620px;*/
+	width: 50%;
 	height: 600px;
+	position: relative;
 	/*display: inline-block;*/
 }
 
 #chart1 {
 	float: left;
-	position: relative;
 }
 
 #chart2 {
-	margin-left: 630px;
-	position: relative;
+	margin-left: 50%;
 }
 
 #yaxis1, #yaxis2 {
 	float: left;
+	margin-top: 285px;
 }
 
 #xaxis1, #xaxis2 {
 	position: absolute;
 	bottom: 0;
+}
+
+select {
+	border: 1px solid #111;
+  	background: white;
+}
+
+#innerchart1, #innerchart2 {
+	border: 1px solid black;
+	width: 82%;
+	height: 90%;
+	position: absolute;
+	right: 5px;
+}
+
+#dataset {
+	box-shadow: 2px 2px 3px #888888;
+}
 }

@@ -1,5 +1,5 @@
 $(document).ready(function() {
-
+	$('#dataset').val("cars").trigger('change');
 });
 
 /** 
@@ -69,11 +69,7 @@ function createAxisOptions(attr) {
 
 function drawChart(col, attr, x) {
 
-
 	createAxisOptions(attr);
-
-
-
 
 	d3.csv('data/' + x.value + '.csv', function(d) {
 		console.log(d);
