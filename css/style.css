@@ -33,6 +33,7 @@ h1, #datasetbox, #charts {
 #xaxis1, #xaxis2 {
 	position: absolute;
 	bottom: 0;
+	left: 50%;
 }
 
 select {
@@ -41,7 +42,7 @@ select {
 }
 
 #innerchart1, #innerchart2 {
-	border: 1px solid black;
+	border: 2px solid black;
 	width: 82%;
 	height: 90%;
 	position: absolute;
