@@ -11,8 +11,19 @@ h1, #datasetbox, #charts {
 
 #chart1 {
 	float: left;
+	position: relative;
 }
 
 #chart2 {
 	margin-left: 630px;
+	position: relative;
+}
+
+#yaxis1, #yaxis2 {
+	float: left;
+}
+
+#xaxis1, #xaxis2 {
+	position: absolute;
+	bottom: 0;
 }

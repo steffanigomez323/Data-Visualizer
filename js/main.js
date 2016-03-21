@@ -2,6 +2,11 @@ $(document).ready(function() {
 
 });
 
+/** 
+* This function is called when a dataset is selected via the select box. It reads from the appropriate .ini file
+* and retrieves the names of each column of the associated .csv file and the names of columns I will actually
+* display, and passes them to the drawChart function.
+*/
 function selectOption(x) {
 	var columns = new Array();
 	var attributes = new Array();
@@ -27,18 +32,51 @@ function selectOption(x) {
 		if (attributes.length == 0) {
 			attributes = columns;
 		}
-		console.log(columns);
-		console.log(attributes);
+		console.log(columns); // sanity check
+		console.log(attributes); // sanity check
 		drawChart(columns, attributes, x);
 	});
 }
 
+/**
+* This method dynamically adds options to the select drop downs within the charts that choose what data 
+* features to compare with. 
+*/
+
+function createAxisOptions(attr) {
+	for (var j = 1; j < 3; j++) {
+
+		$('#yaxis' + j).find('option').remove();
+		var select = document.getElementById("yaxis" + j);
+
+		for (var i = 0; i < attr.length; i++) {
+			var option = document.createElement("option");
+			option.text = attr[i];
+		    select.add(option);
+		}
+
+		$('#xaxis' + j).find('option').remove();
+		select = document.getElementById("xaxis" + j);
+
+		for (var i = 0; i < attr.length; i++) {
+			var option = document.createElement("option");
+			option.text = attr[i];
+		    select.add(option);
+		}
+		
+	}
+}
+
 function drawChart(col, attr, x) {
+
+
+	createAxisOptions(attr);
+
+
+
+
 	d3.csv('data/' + x.value + '.csv', function(d) {
 		console.log(d);
 	});
 
-	d3.csv('data/city_distances.csv', function(d) {
-		console.log(d);
-	});
 }

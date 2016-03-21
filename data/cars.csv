@@ -1,4 +1,5 @@
-﻿31,4,71,65,1773,19,71,3,"""toyota corolla 1200"""
+﻿mpg,cylinders,displacement,horsepower,weight,acceleration,model_year,origin,car_name
+31,4,71,65,1773,19,71,3,"""toyota corolla 1200"""
 14,8,351,153,4154,13.5,71,1,"""ford galaxie 500"""
 29.5,4,97,71,1825,12.2,76,2,"""volkswagen rabbit"""
 29.9,4,98,65,2380,20.7,81,1,"""ford escort 2h"""
