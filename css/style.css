@@ -6,5 +6,13 @@ h1, #datasetbox, #charts {
 	border: 1px solid black;
 	width: 620px;
 	height: 600px;
-	display: inline-block;
+	/*display: inline-block;*/
+}
+
+#chart1 {
+	float: left;
+}
+
+#chart2 {
+	margin-left: 630px;
 }
