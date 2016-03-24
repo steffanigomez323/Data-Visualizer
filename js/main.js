@@ -1,5 +1,7 @@
 $(document).ready(function() {
 	$('#dataset').val("cars").trigger('change');
+	drawChart("mpg", "mpg", "1", "cars");
+	drawChart("mpg", "mpg", "2", "cars");
 });
 
 /** 
@@ -32,9 +34,10 @@ function selectOption(x) {
 		if (attributes.length == 0) {
 			attributes = columns;
 		}
-		console.log(columns); // sanity check
-		console.log(attributes); // sanity check
-		drawChart(columns, attributes, x);
+		//console.log(columns); // sanity check
+		//console.log(attributes); // sanity check
+		//drawChart(columns, attributes, x);
+		createAxisOptions(attributes);
 	});
 }
 
@@ -67,12 +70,85 @@ function createAxisOptions(attr) {
 	}
 }
 
-function drawChart(col, attr, x) {
+/**
+This function handles redrawing the chart every time that a new option/axis is selected for one of the charts.
+*/
 
-	createAxisOptions(attr);
+function chartSelectOption(option) {
+	var opt = $(option).val();
+	var selector = $(option).attr("id");
+	var letter = selector.substring(0, 1);
+	var opt2;
+	if (letter === "y") {
+		opt2 = $("#x" + selector.substring(1, selector.length)).val();
+		var tmp = opt;
+		opt = opt2;
+		opt2 = tmp;
+	}
+	else {
+		opt2 = $("#y" + selector.substring(1, selector.length)).val();
+	}
 
-	d3.csv('data/' + x.value + '.csv', function(d) {
-		console.log(d);
+	var num = selector.substring(selector.length - 1, selector.length);
+
+	$("#innerchart" + num).empty();
+
+	drawChart(opt, opt2, num, $('#dataset').val());
+
+}
+
+/**
+Begin drawing the chart by drawing the axis.
+*/
+
+function drawChart(axis1, axis2, chart, file) {
+	var num = chart;
+	var xvar = axis1;
+	var yvar = axis2;
+	d3.csv('data/' + file + '.csv', function(data) {
+		console.log(data);
+		console.log(num);
+
+		var margin = {top: 10, right: 20, bottom: 20, left: 40},
+	    	width = $("#innerchart" + num).width() - margin.left - margin.right,
+	    	height = $("#innerchart" + num).height() - margin.top - margin.bottom;
+
+		var chart = d3.select("#innerchart" + num)
+	                        .append("svg") 
+	                        .attr("width", width + (2 * margin.left) + margin.right)    //set width
+	                        .attr("height", height + margin.top + margin.bottom)  //set height
+	                        .append("g")
+	    					.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		var x = d3.scale.ordinal()
+		    .rangeRoundBands([0, width], .1);
+
+		var y = d3.scale.linear()
+		    .range([height, 0]);
+
+		console.log(xvar);
+		console.log(yvar);
+
+		x.domain(data.map(function(d) { return d[xvar]; }));
+		y.domain([0, d3.max(data, function(d) { return d[yvar]; })]);
+
+		var xAxis = d3.svg.axis()
+		    .scale(x)
+		    .orient("bottom");
+
+		var yAxis = d3.svg.axis()
+		    .scale(y)
+		    .orient("left");
+
+
+		chart.append("g")
+		  .attr("class", "x axis")
+		  .attr("transform", "translate(0," + height + ")")
+		  .call(xAxis);
+
+		chart.append("g")
+		  .attr("class", "y axis")
+		  .call(yAxis)
 	});
 
 }
