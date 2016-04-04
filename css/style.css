@@ -11,18 +11,19 @@ h1, #datasetbox, #charts {
 	border-radius: 5px;
 	background-color: white;
 	/*width: 620px;*/
-	width: 49%;
+	/*width: 49%;*/
 	height: 600px;
 	position: relative;
+	text-align: center;
 	/*display: inline-block;*/
 }
 
 #chart1 {
-	float: left;
+	/*float: left;*/
 }
 
 #chart2 {
-	margin-left: 50%;
+	/*margin-left: 50%;*/
 }
 
 #yaxis1, #yaxis2 {
@@ -64,3 +65,28 @@ select {
 	shape-rendering: crispEdges;
 }
 
+
+.bar {
+  fill: steelblue;
+}
+
+.bar:hover {
+  fill: brown;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+text.mono {
+	font-size: 9pt;
+	font-family: Consolas, courier;
+	fill: #aaa;
+}
+
+rect.bordered {
+	stroke: #E6E6E6;
+	stroke-width:2px;   
+}
