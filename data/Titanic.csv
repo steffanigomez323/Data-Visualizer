@@ -1,3 +1,4 @@
+passenger_class,survived,gender,age,siblings_spouses,parents_children,fare,embarked
 3,0,male,32,1,0,15.85000038,UK
 2,0,male,34,1,0,26,UK
 2,1,female,48,0,2,36.75,UK
