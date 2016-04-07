@@ -16,7 +16,9 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script> <!-- JQUERY -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.min.js"></script> <!-- D3.js -->
 
-  <script src="js/main.js"></script> 
+
+  <script src="js/charts.js"></script>
+  <script src="js/main.js"></script>
 
   <style>
 
@@ -43,6 +45,10 @@
 
 <div id="charts">
 	<div id="chart1">
+    Filter: <input type="text" name="filter" id="filter1">
+    <button id="submit" value="1" onclick="restrainfilterChart(this)">Submit</button>
+    Brush: <input type="text" id="brush1" name="brush">
+    <button id="submit" value="1" onclick="restrainChart(this)">Submit</button><br>
     <select id="yaxis1" onchange="chartSelectOption(this)">
     </select>
     <br>
@@ -54,7 +60,10 @@
 	</div>
 
 	<div id="chart2">
-
+    Filter: <input type="text" name="filter" id="filter2">
+    <button id="submit" value="2" onclick="restrainfilterChart(this)">Submit</button> 
+    Brush: <input type="text" id="brush2" name="brush">
+    <button id="submit" value="2" onclick="restrainChart(this)">Submit</button><br>
     <select id="yaxis2" onchange="chartSelectOption(this)">
     </select>
     <br>

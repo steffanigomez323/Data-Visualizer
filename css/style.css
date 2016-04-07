@@ -12,7 +12,7 @@ h1, #datasetbox, #charts {
 	background-color: white;
 	/*width: 620px;*/
 	/*width: 49%;*/
-	height: 600px;
+	height: 700px;
 	position: relative;
 	text-align: center;
 	/*display: inline-block;*/
@@ -43,7 +43,7 @@ select {
 }
 
 #innerchart1, #innerchart2 {
-	border: 2px solid black;
+	/*border: 2px solid black;*/
 	width: 82%;
 	height: 90%;
 	position: absolute;
@@ -74,6 +74,10 @@ select {
   fill: brown;
 }
 
+.bar text {
+  fill: #fff;
+}
+
 .line {
   fill: none;
   stroke: steelblue;
@@ -83,10 +87,23 @@ select {
 text.mono {
 	font-size: 9pt;
 	font-family: Consolas, courier;
-	fill: #aaa;
+	/*fill: #fff;*/
 }
 
 rect.bordered {
 	stroke: #E6E6E6;
 	stroke-width:2px;   
+}
+
+.dot {
+  stroke: #000;
+}
+
+.tooltip {
+  position: absolute;
+  width: 200px;
+  height: 28px;
+  pointer-events: none;
+  color: #CD5DFF;
+  font-weight: bold;
 }
