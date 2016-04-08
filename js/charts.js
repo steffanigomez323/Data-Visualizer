@@ -45,7 +45,22 @@ function lineChart(xvar, yvar, data, num) {
 	    chart.append("path")
 	    	.datum(data)
 	    	.attr("class", "line")
-	    	.attr("d", line);
+	    	.attr("d", line)
+	    	.on("mouseover", function(d) {
+			  d3.select(this).style("fill", "brown");
+			})                  
+			.on("mouseout", function(d) {
+			  d3.select(this).style("fill", "steelblue");
+			})
+	    	.on("click", function(d) {
+	    		if (Number(num) % 2 == 1) {
+		  			num = String(Number(num) + 1);
+		  		}
+		  		else {
+		  			num = String(Number(num) - 1);
+		  		}
+	    		histogram(xvar, yvar, data, num);
+	    	});
 };
 
 function barChart(xvar, yvar, data, num) {
@@ -70,9 +85,6 @@ function barChart(xvar, yvar, data, num) {
 
 	var y = d3.scale.linear()
 	    .range([height, 0]);
-
-	//x.domain(data.map(function(d) { return d[xvar]; }));
-	//y.domain([0, d3.max(frequency, function(d) { return d.val; })]);
 
 	var xAxis = d3.svg.axis()
 	    .scale(x)
@@ -111,9 +123,6 @@ function barChart(xvar, yvar, data, num) {
 		yVals = yVals.sort(function(a, b){return a-b});
 	}
 
-	//color.domain(d3.keys(yVals).filter(function(key) { return key !== "State"; }));
-
-	//console.log(yVals);
 
 	if (yVals.length < 8) {
 
@@ -134,15 +143,11 @@ function barChart(xvar, yvar, data, num) {
 			}
 		});
 
-		//console.log(frequency);
-
 		var counts = [];
 		for (var i = 0; i < xVals.length; i++) {
 			var values = [];
 			y0 = 0;
 			for (var j = 0; j < yVals.length; j++) {
-				//console.log(i);
-				//console.log(j);
 				values.push({ name: yVals[j], groupname: xVals[i], y0: y0, y1: y0 += frequency[(i * (xVals.length - 1)) + j].frequency});
 			}
 			counts.push({ name: xVals[i], freq: values, total: values[values.length - 1].y1});
@@ -161,8 +166,6 @@ function barChart(xvar, yvar, data, num) {
 		var min = d3.min(yVals, function(d) { return d; });
 		var max = d3.max(yVals, function(d) { return d; });
 		var yincr = Math.ceil((max - min) / buckets);
-		//console.log(yincr);
-		//console.log(yVals.length);
 
 		for (var j = 0; j < buckets; j++) {
 			var vals = [];
@@ -312,16 +315,6 @@ function barChart(xvar, yvar, data, num) {
 
 		});
 
-	/*chart.selectAll(".bar")
-      .data(frequency)
-    .enter().append("rect")
-      .attr("class", "bar")
-      //.attr("x", function(d) { 	return x(d.name); })
-      .attr("width", x.rangeBand())
-      .attr("y", function(d) { return y(d.frequency); })
-      .attr("height", function(d) { return y(d.frequency) - y(d.val); });
-      .style("fill", function(d) { return color(d.name); });*/
-
     var legend = chart.selectAll(".legend")
       .data(color.domain().slice().reverse())
     .enter().append("g")
@@ -343,11 +336,11 @@ function barChart(xvar, yvar, data, num) {
 };
 
 function heatmap(xvar, yvar, data, num) {
-	var margin = {top: 40, right: 20, bottom: 20, left: 100},
+	var margin = {top: 40, right: 20, bottom: 20, left: 150},
 		  width = $("#innerchart" + num).width() - margin.left - margin.right,
 		  height = $("#innerchart" + num).height() - margin.top - margin.bottom,
-          gridSize = Math.floor(width / 18),
-          legendElementWidth = gridSize * 1.5,
+          gridSize = Math.floor(width / 12),
+          legendElementWidth = gridSize,
           buckets = 9,
           colors = ["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58"];//, // alternatively colorbrewer.YlGnBu[9]
 
@@ -380,11 +373,10 @@ function heatmap(xvar, yvar, data, num) {
 
 	if (getType(xvar) && getType(yvar)) {
 
+
 			var xIncrement = Math.ceil(d3.max(data, function(d) { return d[xvar]}) / buckets);
 			var yIncrement = Math.ceil(d3.max(data, function(d) { return d[yvar]}) / buckets);
 
-			//console.log(xIncrement);
-			//console.log(yIncrement);
 			totalBuckets = [];
 			xsum = 0;
 			ysum = 0;
@@ -398,7 +390,6 @@ function heatmap(xvar, yvar, data, num) {
 				xsum = 0;
 			}
 
-			//console.log(totalBuckets);
 
 			data.forEach(function (d) {
 				var y = d[yvar];
@@ -411,14 +402,9 @@ function heatmap(xvar, yvar, data, num) {
 				if (xIndex >= buckets) {
 					xIndex = buckets - 1;
 				}
-				//console.log(y);
-				//console.log(x);
-				//console.log(yIndex);
-				//console.log(xIndex);
+
 				totalBuckets[(yIndex * buckets) + xIndex].val = totalBuckets[(yIndex * buckets) + xIndex].val + 1;
 		 	});
-
-		 	//console.log(totalBuckets);
 
 		 	var yVals = [];
 		 	for (var i = 0; i < totalBuckets.length; i = i + 9) {
@@ -428,6 +414,7 @@ function heatmap(xvar, yvar, data, num) {
 		 	for (var j = 0; j < 9; j++) {
 		 		xVals.push(totalBuckets[j].x);
 		 	}
+
 
 		 	var xLabels = chart.selectAll(".xLabel")
 		          .data(xVals)
@@ -465,7 +452,10 @@ function heatmap(xvar, yvar, data, num) {
 		              .attr("class", "bucket bordered")
 		              .attr("width", gridSize)
 		              .attr("height", gridSize)
-		              .style("fill", colors[0]);
+		              .style("fill", colors[0])
+		              .on("click", function(d) {
+		              	console.log("hi");
+		              });
 
 		          cards.transition().duration(1000)
 		              .style("fill", function(d) { return colorScale(d.val); });
@@ -474,63 +464,107 @@ function heatmap(xvar, yvar, data, num) {
 		          
 		          cards.exit().remove();
          }
-         else {
-/*
-         	var xIncrement = Math.ceil(d3.max(data, function(d) { return d[xvar]}) / buckets);
-			var yIncrement = Math.ceil(d3.max(data, function(d) { return d[yvar]}) / buckets);
 
-			//console.log(xIncrement);
-			//console.log(yIncrement);
-			totalBuckets = [];
+         else if (getType(xvar) && !getType(yvar)) {
+
+         	var xIncrement = Math.ceil(d3.max(data, function(d) { return d[xvar]}) / buckets);
+
+		 	totalBuckets = [];
 			xsum = 0;
-			ysum = 0;
+			//ysum = 0;
 			for (var i = 0; i < buckets; i++) {
-				for (var j = 0; j < buckets; j++) {
-					obj = { x: xsum, y: ysum, val: 0 };
+				for (var j = 0; j < y.length; j++) {
+					obj = { x: xsum, y: y[j], ycoor: j, xcoor: 0, val: 0 };
 					totalBuckets.push(obj);
-					xsum += xIncrement;
 				}
-				ysum += yIncrement;
-				xsum = 0;
+				xsum += xIncrement;
 			}
 
-			//console.log(totalBuckets);
+			console.log(totalBuckets);
+
+
+			var xVals = [];
+		 	for (var j = 0; j < totalBuckets.length; j = j + y.length) {
+		 		xVals.push(totalBuckets[j].x);
+		 	}
+
+		 	console.log(xVals);
 
 			data.forEach(function (d) {
-				var y = d[yvar];
-				var yIndex = (y - (y % yIncrement)) / yIncrement;
-				if (yIndex >= buckets) {
-					yIndex = buckets - 1;
-				}
-				var x = d[xvar];
-				var xIndex = (x - (x % xIncrement)) / xIncrement; 
+				var truey = d[yvar];
+				var truex = d[xvar];
+				var xIndex = (truex - (truex % xIncrement)) / xIncrement; 
 				if (xIndex >= buckets) {
 					xIndex = buckets - 1;
 				}
-				//console.log(y);
-				//console.log(x);
-				//console.log(yIndex);
-				//console.log(xIndex);
-				console.log(yIndex);
-				totalBuckets[(yIndex * buckets) + xIndex].val = totalBuckets[(yIndex * buckets) + xIndex].val + 1;
+
+				for (var i = 0; i < totalBuckets.length; i++) {
+					if (totalBuckets[i].y === truey) {
+						var index = i + xIndex;
+						if (index >= totalBuckets.length) {
+							index = totalBuckets.length - 1;
+						}
+						totalBuckets[index].val = totalBuckets[index].val + 1;
+					}
+				}
+
 		 	});
 
-		 	//console.log(totalBuckets);
-
-		 	var yVals = [];
-		 	for (var i = 0; i < totalBuckets.length; i = i + 9) {
-		 		yVals.push(totalBuckets[i].y);
-		 	}
-		 	var xVals = [];
-		 	for (var j = 0; j < 9; j++) {
-		 		xVals.push(totalBuckets[j].x);
-		 	}
-*/
 
 
+			console.log(totalBuckets);
 
 
+		 	var xLabels = chart.selectAll(".xLabel")
+		          .data(xVals)
+		          .enter().append("text")
+		            .text(function(d) { return d; })
+		            .attr("x", function(d, i) { return i * gridSize; })
+		            .attr("y", 0)
+		            .style("text-anchor", "middle")
+		            .attr("transform", "translate(" + gridSize / 2 + ", -6)");
 
+		    var yLabels = chart.selectAll(".yLabel")
+		          .data(y)
+		          .enter().append("text")
+		            .text(function (d) { return d; })
+		            .attr("x", 0)
+		            .attr("y", function (d, i) { return i * gridSize; })
+		            .style("text-anchor", "end")
+		            .attr("transform", "translate(-6," + gridSize / 1.5 + ")");
+
+		          var colorScale = d3.scale.quantile()
+		                  .domain([0, buckets - 1, d3.max(totalBuckets, function (d) { 
+		                    return d.val; })])
+		                  .range(colors);
+
+		          var cards = chart.selectAll(".x")
+		              .data(totalBuckets);
+
+		          cards.append("title");
+
+		          cards.enter().append("rect")
+		              .attr("x", function(d) { return ((d.x - (d.x % xIncrement)) / xIncrement) * gridSize; })
+		              .attr("y", function(d) { return d.ycoor * gridSize; })
+		              .attr("rx", 4)
+		              .attr("ry", 4)
+		              .attr("class", "bucket bordered")
+		              .attr("width", gridSize)
+		              .attr("height", gridSize)
+		              .style("fill", colors[0])
+		              .on("click", function(d) {
+		              	console.log("hi");
+		              });
+
+		          cards.transition().duration(1000)
+		              .style("fill", function(d) { return colorScale(d.val); });
+
+		          cards.select("title").text(function(d) { return d.val; });
+		          
+		          cards.exit().remove();
+         }
+
+         else {
 
          	totalBuckets = [];
 			for (var i = 0; i < x.length; i++) {
@@ -586,7 +620,10 @@ function heatmap(xvar, yvar, data, num) {
 		              .attr("class", "bucket bordered")
 		              .attr("width", gridSize)
 		              .attr("height", gridSize)
-		              .style("fill", colors[0]);
+		              .style("fill", colors[0])
+		              .on("click", function(d) {
+		              	console.log("hi");
+		              });
 
 		          cards.transition().duration(1000)
 		              .style("fill", function(d) { return colorScale(d.val); });
@@ -757,9 +794,7 @@ var chart = d3.select("#innerchart" + num).append("svg")
           tooltip.transition()
                .duration(500)
                .style("opacity", 0);
-      });
-
-  	$("circle").click(function() {
+      }).on("click", function() {
   		if (Number(num) % 2 == 1) {
   			num = String(Number(num) + 1);
   		}

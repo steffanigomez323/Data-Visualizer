@@ -140,12 +140,12 @@ function drawChart(axis1, axis2, chart, file, restraint, type) {
 
 			if (xvar == yvar) {
 
-				if (getType(xvar) && getType(yvar)) { 
-					lineChart(xvar, yvar, data, num);
-				}
-				else {
+				//if (getType(xvar) && getType(yvar)) { 
+				//	lineChart(xvar, yvar, data, num);
+				//}
+				//else {
 					heatmap(xvar, yvar, data, num);
-				}
+				//}
 
 			}
 			else {
@@ -184,12 +184,12 @@ function drawChart(axis1, axis2, chart, file, restraint, type) {
 
 			if (xvar == yvar) {
 
-				if (getType(xvar) && getType(yvar)) { 
-					lineChart(xvar, yvar, data, num);
-				}
-				else {
+				//if (getType(xvar) && getType(yvar)) { 
+				//	lineChart(xvar, yvar, data, num);
+				//}
+				//else {
 					heatmap(xvar, yvar, data, num);
-				}
+				//}
 
 			}
 			else {
