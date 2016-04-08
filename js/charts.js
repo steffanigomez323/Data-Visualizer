@@ -1,4 +1,4 @@
-function lineChart(xvar, yvar, data, num) {
+/*function lineChart(xvar, yvar, data, num) {
 	var margin = {top: 10, right: 20, bottom: 20, left: 40},
 	    	width = $("#innerchart" + num).width() - margin.left - margin.right,
 	    	height = $("#innerchart" + num).height() - margin.top - margin.bottom;
@@ -61,9 +61,14 @@ function lineChart(xvar, yvar, data, num) {
 		  		}
 	    		histogram(xvar, yvar, data, num);
 	    	});
-};
+};*/
 
-function barChart(xvar, yvar, data, num) {
+/**
+* This function, given data, the chart number, and an x- and y-variable constructs a stacked
+* bar graph, having at most 7 different stacks.
+*/
+
+function stackedbarChart(xvar, yvar, data, num) {
 	var margin = {top: 10, right: 20, bottom: 20, left: 40},
 		    	width = $("#innerchart" + num).width() - margin.left - margin.right,
 		    	height = $("#innerchart" + num).height() - margin.top - margin.bottom,
@@ -79,7 +84,6 @@ function barChart(xvar, yvar, data, num) {
 	var color = d3.scale.ordinal()
     .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
 
-
 	var x = d3.scale.ordinal()
 	    .rangeRoundBands([0, width], .1);
 
@@ -94,15 +98,14 @@ function barChart(xvar, yvar, data, num) {
 	    .scale(y)
 	    .orient("left");
 
-	var xVals = data.map(function(d) {
-			return d[xvar]});
-		xVals = xVals.reduce(function(a,b){
+	var xVals = data.map(function(d) { return d[xvar]});
+	xVals = xVals.reduce(function(a,b){
 	    if (a.indexOf(b) < 0 ) a.push(b);
-	    return a;
-	  },[])
-		.sort(function(a,b){
-	    return a > b;
-	  });
+		    return a;
+		},[])
+			.sort(function(a,b){
+		  	return a > b;
+		});
 
 	var yVals = data.map(function(d) {
 			return d[yvar]});
@@ -113,23 +116,21 @@ function barChart(xvar, yvar, data, num) {
 		.sort(function(a,b){
 	    return a > b;
 	  });
-	 
 
-	if (getType(yvar))  {
-
-		yVals = yVals.filter(function(elem, index, self) {
-	    	return index == self.indexOf(elem);
-				});
-		yVals = yVals.sort(function(a, b){return a-b});
-	}
-
+	yVals = yVals.filter(function(elem, index, self) {
+		return index == self.indexOf(elem);
+	});
+	yVals = yVals.sort(function(a, b){return a-b});
 
 	if (yVals.length < 8) {
 
 		var frequency = [];
 		for (var i = 0; i < xVals.length; i++) {
 			for (var j = 0; j < yVals.length; j++) {
+				var values = [];
+				values.push(yVals[j]);
 			frequency.push({ name: xVals[i], 
+					values: values,
 					count: yVals[j], 
 					frequency: 0});
 			}
@@ -148,7 +149,8 @@ function barChart(xvar, yvar, data, num) {
 			var values = [];
 			y0 = 0;
 			for (var j = 0; j < yVals.length; j++) {
-				values.push({ name: yVals[j], groupname: xVals[i], y0: y0, y1: y0 += frequency[(i * (xVals.length - 1)) + j].frequency});
+				values.push({ name: yVals[j], groupname: xVals[i], values: yVals[j], 
+					y0: y0, y1: y0 += frequency[(i * (xVals.length - 1)) + j].frequency});
 			}
 			counts.push({ name: xVals[i], freq: values, total: values[values.length - 1].y1});
 		}
@@ -156,6 +158,61 @@ function barChart(xvar, yvar, data, num) {
 		counts.sort(function(a, b) { return b.total - a.total; });
 
 		color.domain(yVals);
+
+		x.domain(data.map(function(d) { return d[xvar]; }));
+	  	y.domain([0, d3.max(counts, function(d) { return d.total; })]);
+
+		chart.append("g")
+		  .attr("class", "x axis")
+		  .attr("transform", "translate(0," + height + ")")
+		  .call(xAxis);
+
+		chart.append("g")
+		  .attr("class", "y axis")
+		  .call(yAxis);
+
+		var ybar = chart.selectAll(".yvar")
+		      	.data(counts)
+			.enter().append("g")
+				.attr("class", "g")
+				.attr("transform", function(d) { return "translate(" + x(d.name) + ",0)"; });
+
+
+		ybar.selectAll(".rect")
+	      .data(function(d) { return d.freq; })
+	    .enter().append("rect")
+	      .attr("width", x.rangeBand())
+	      .attr("y", function(d) { return y(d.y1); })
+	      .attr("height", function(d) { return y(d.y0) - y(d.y1); })
+	      .style("fill", function(d) { return color(d.name); })
+	      .on("mouseover", function(d) {
+			  d3.select(this).style("fill", "brown");
+			})                  
+			.on("mouseout", function(d) {
+			  d3.select(this).style("fill", function(d) { return color(d.name); });
+			})
+			.on("click", function(d) {
+				var xvalue = d.groupname;
+				var yvalue = d.values;
+				var dtmp = data;
+				data = data.filter(function(item) {
+						if (item[xvar] === xvalue) {
+							if (item[yvar] === yvalue) {
+								return item;
+							}
+						}
+				});
+				var ntmp = num;
+		  		if (Number(num) % 2 == 1) {
+		  			num = String(Number(num) + 1);
+		  		}
+		  		else {
+		  			num = String(Number(num) - 1);
+		  		}
+		  		barChart(xvar, yvar, data, num);
+		  		num = ntmp;
+		  		data = dtmp;
+		});
 
 	}
 	else {
@@ -170,7 +227,8 @@ function barChart(xvar, yvar, data, num) {
 		for (var j = 0; j < buckets; j++) {
 			var vals = [];
 			for (var l = 0; l < yVals.length; l++) {
-				if ((j * yincr) + min <= yVals[(j * yincr) + l] && yVals[(j * yincr) + l] <= (j * yincr) + yincr + min) {
+				if ((j * yincr) + min <= yVals[(j * yincr) + l] && 
+				  yVals[(j * yincr) + l] <= (j * yincr) + yincr + min) {
 					vals.push(yVals[(j * yincr) + l]);
 				}
 				if (yVals[(j * yincr) + l] > (j * yincr) + yincr + min) {
@@ -183,10 +241,7 @@ function barChart(xvar, yvar, data, num) {
 			}
 			var name = String((j * yincr) + min).concat(" - ").concat(String(index));
 			yGroups.push({ name: name, values: vals });
-			//yGroups.push(name);
 		}
-
-		console.log(yGroups);
 
 		for (var i = 0; i < xVals.length; i++) {
 			for (var j = 0; j < yGroups.length; j++) {
@@ -196,124 +251,96 @@ function barChart(xvar, yvar, data, num) {
 			}
 		}
 
-		console.log(frequency);
-
 		data.forEach(function(d) {
 			for (var j = 0; j < frequency.length; j = j + yGroups.length) {
-				//for (var k = 0; k < frequency[j].count.values.length; k++) {
 				var b = Math.floor((d[yvar] - min) / yincr);
-					/*if (j == 0 && b == 0 && frequency[j].name === d[xvar]) {
-						frequency[j].frequency = frequency[j].frequency + 1;
-					}
-					else if (frequency[j].name === d[xvar] && j % yincr == 0) {
-						frequency[j].frequency = frequency[j].frequency + 1;
-					}
-					else if (frequency[j].name === d[xvar] && j % yincr == 7 && b == 0) {
 
-					}*/
-				//}
-				//var index = (Math.floor( j / (buckets - 1)) * (buckets - 1);
-				//console.log(j);
-				//console.log(b);
-				//console.log((j * (buckets - 1)) + b);
-				//console.log(String(d[yvar]) + " " + d[xvar]);
 				if (frequency[j].name === d[xvar]) {
 					var index = j + b;
 					if (index >= frequency.length) {
 						index = frequency.length - 1;
 					}
 					frequency[index].frequency = frequency[index].frequency + 1;
-					//var index = Math.floor( j / (buckets - 1));
-					//frequency[index * (buckets - 1) + b].frequency = frequency[index * (buckets - 1)].frequency + 1;
+
 				}
 			}
 		});
 
-		//console.log(frequency);
 
 		var counts = [];
 		for (var i = 0; i < xVals.length; i++) {
 			var values = [];
 			y0 = 0;
 			for (var j = 0; j < yGroups.length; j++) {
-				//console.log(i);
-				//console.log(j);
-				values.push({ name: yGroups[j].name, values: yGroups[j].values, groupname: xVals[i], y0: y0, y1: y0 += frequency[(i * yGroups.length) + j].frequency});
+				values.push({ name: yGroups[j].name, values: yGroups[j].values, 
+					groupname: xVals[i], y0: y0, 
+					y1: y0 += frequency[(i * yGroups.length) + j].frequency});
 			}
-			counts.push({ name: frequency[i * yGroups.length].name, freq: values, total: values[values.length - 1].y1});
+			counts.push({ name: frequency[i * yGroups.length].name, freq: values, 
+				total: values[values.length - 1].y1});
 		}
 
 		counts.sort(function(a, b) { return b.total - a.total; });
-		//color.domain(yGroups.map(function(d) { return d.name }));
 		color.domain(yGroups.map(function(d) { return d.name }));
 
-	}
 
-	//console.log(counts);
+		x.domain(data.map(function(d) { return d[xvar]; }));
+	  	y.domain([0, d3.max(counts, function(d) { return d.total; })]);
 
+		chart.append("g")
+		  .attr("class", "x axis")
+		  .attr("transform", "translate(0," + height + ")")
+		  .call(xAxis);
 
-	x.domain(data.map(function(d) { return d[xvar]; }));
-  	y.domain([0, d3.max(counts, function(d) { return d.total; })]);
+		chart.append("g")
+		  .attr("class", "y axis")
+		  .call(yAxis);
 
-	chart.append("g")
-	  .attr("class", "x axis")
-	  .attr("transform", "translate(0," + height + ")")
-	  .call(xAxis);
-
-	chart.append("g")
-	  .attr("class", "y axis")
-	  .call(yAxis);
-
-	var ybar = chart.selectAll(".yvar")
-	      	.data(counts)
-		.enter().append("g")
-			.attr("class", "g")
-			.attr("transform", function(d) { return "translate(" + x(d.name) + ",0)"; });
+		var ybar = chart.selectAll(".yvar")
+		      	.data(counts)
+			.enter().append("g")
+				.attr("class", "g")
+				.attr("transform", function(d) { return "translate(" + x(d.name) + ",0)"; });
 
 
-	ybar.selectAll(".rect")
-      .data(function(d) { return d.freq; })
-    .enter().append("rect")
-      .attr("width", x.rangeBand())
-      .attr("y", function(d) { return y(d.y1); })
-      .attr("height", function(d) { return y(d.y0) - y(d.y1); })
-      .style("fill", function(d) { return color(d.name); })
-      .on("mouseover", function(d) {
-		  d3.select(this).style("fill", "brown");
-		})                  
-		.on("mouseout", function(d) {
-		  d3.select(this).style("fill", function(d) { return color(d.name); });
-		})
-		.on("click", function(d) {
-			console.log(d.name);
-			console.log(xvar);
-			console.log(yvar);
-			console.log(d);
-			var xvalue = d.groupname;
-			var yvalue = d.name;
-			data = data.filter(function(item) {
-			//	console.log(xvalue);
-			//	console.log(yvalue);
-			//	console.log(d);
-				for (var i = 0; i < d.values.length; i++) {
-					if (item[xvar] === xvalue) {
-						if (item[yvar] === d.values[i]) {
-							return item;
+		ybar.selectAll(".rect")
+	      .data(function(d) { return d.freq; })
+	    .enter().append("rect")
+	      .attr("width", x.rangeBand())
+	      .attr("y", function(d) { return y(d.y1); })
+	      .attr("height", function(d) { return y(d.y0) - y(d.y1); })
+	      .style("fill", function(d) { return color(d.name); })
+	      .on("mouseover", function(d) {
+			  d3.select(this).style("fill", "brown");
+			})                  
+			.on("mouseout", function(d) {
+			  d3.select(this).style("fill", function(d) { return color(d.name); });
+			})
+			.on("click", function(d) {
+				var xvalue = d.groupname;
+				var dtmp = data;
+				data = data.filter(function(item) {
+					for (var i = 0; i < d.values.length; i++) {
+						if (item[xvar] === xvalue) {
+							if (item[yvar] === d.values[i]) {
+								return item;
+							}
 						}
 					}
-				}
+				});
+				var ntmp = num;
+		  		if (Number(num) % 2 == 1) {
+		  			num = String(Number(num) + 1);
+		  		}
+		  		else {
+		  			num = String(Number(num) - 1);
+		  		}
+		  		histogram(yvar, xvar, data, num);
+		  		num = ntmp;
+		  		data = dtmp;
 			});
-			console.log(data);
-	  		if (Number(num) % 2 == 1) {
-	  			num = String(Number(num) + 1);
-	  		}
-	  		else {
-	  			num = String(Number(num) - 1);
-	  		}
-	  		console.log(num);
-	  		histogram(yvar, xvar, data, num);
 
-		});
+	}
 
     var legend = chart.selectAll(".legend")
       .data(color.domain().slice().reverse())
@@ -321,28 +348,33 @@ function barChart(xvar, yvar, data, num) {
       .attr("class", "legend")
       .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
 
-  legend.append("rect")
-      .attr("x", width - 18)
-      .attr("width", 18)
-      .attr("height", 18)
-      .style("fill", color);
+	legend.append("rect")
+		.attr("x", width - 18)
+	  	.attr("width", 18)
+	  	.attr("height", 18)
+	  	.style("fill", color);
 
-  legend.append("text")
-      .attr("x", width - 24)
-      .attr("y", 9)
-      .attr("dy", ".35em")
-      .style("text-anchor", "end")
-      .text(function(d) { return d; });
+	legend.append("text")
+	    .attr("x", width - 24)
+	    .attr("y", 9)
+	    .attr("dy", ".35em")
+	    .style("text-anchor", "end")
+	    .text(function(d) { return d; });
 };
+
+/**
+* This function, given data, the chart number, and an x- and y-variable constructs a heatmap,
+* being at maximum a 9 x 9 grid.
+*/
 
 function heatmap(xvar, yvar, data, num) {
 	var margin = {top: 40, right: 20, bottom: 20, left: 150},
 		  width = $("#innerchart" + num).width() - margin.left - margin.right,
 		  height = $("#innerchart" + num).height() - margin.top - margin.bottom,
-          gridSize = Math.floor(width / 12),
+          gridSize = Math.floor(width / 15),
           legendElementWidth = gridSize,
           buckets = 9,
-          colors = ["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58"];//, // alternatively colorbrewer.YlGnBu[9]
+          colors = ["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58"];
 
       var chart = d3.select("#innerchart" + num)
 		  .append("svg") 
@@ -351,25 +383,23 @@ function heatmap(xvar, yvar, data, num) {
 		  .append("g")
 		  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-	var x = data.map(function(d) {
-			return d[xvar]});
-		x = x.reduce(function(a,b){
+	var x = data.map(function(d) {return d[xvar]; });
+	x = x.reduce(function(a,b){
 	    if (a.indexOf(b) < 0 ) a.push(b);
-	    return a;
-	  },[])
+	    	return a;
+	  	},[])
 		.sort(function(a,b){
-	    return a > b;
-	  });
+	    	return a > b;
+	  	});
 
-	var y = data.map(function(d) {
-			return d[yvar]});
-		y = y.reduce(function(a,b){
-	    if (a.indexOf(b) < 0 ) a.push(b);
-	    return a;
-	  },[])
+	var y = data.map(function(d) { return d[yvar]; });
+	y = y.reduce(function(a,b){
+	   	if (a.indexOf(b) < 0 ) a.push(b);
+	    	return a;
+	  	},[])
 		.sort(function(a,b){
-	    return a > b;
-	  });
+	    	return a > b;
+	  	});
 
 	if (getType(xvar) && getType(yvar)) {
 
@@ -402,7 +432,6 @@ function heatmap(xvar, yvar, data, num) {
 				if (xIndex >= buckets) {
 					xIndex = buckets - 1;
 				}
-
 				totalBuckets[(yIndex * buckets) + xIndex].val = totalBuckets[(yIndex * buckets) + xIndex].val + 1;
 		 	});
 
@@ -434,35 +463,43 @@ function heatmap(xvar, yvar, data, num) {
 		            .style("text-anchor", "end")
 		            .attr("transform", "translate(-6," + gridSize / 1.5 + ")");
 
-		          var colorScale = d3.scale.quantile()
-		                  .domain([0, buckets - 1, d3.max(totalBuckets, function (d) { 
-		                    return d.val; })])
-		                  .range(colors);
+          var colorScale = d3.scale.quantile()
+                  .domain([0, buckets - 1, d3.max(totalBuckets, function (d) { 
+                    return d.val; })])
+                  .range(colors);
 
-		          var cards = chart.selectAll(".x")
-		              .data(totalBuckets);
+          var cards = chart.selectAll(".x")
+              .data(totalBuckets);
 
-		          cards.append("title");
+          cards.append("title");
 
-		          cards.enter().append("rect")
-		              .attr("x", function(d) { return ((d.x - (d.x % xIncrement)) / xIncrement) * gridSize; })
-		              .attr("y", function(d) { return ((d.y - (d.y % yIncrement)) / yIncrement) * gridSize; })
-		              .attr("rx", 4)
-		              .attr("ry", 4)
-		              .attr("class", "bucket bordered")
-		              .attr("width", gridSize)
-		              .attr("height", gridSize)
-		              .style("fill", colors[0])
-		              .on("click", function(d) {
-		              	console.log("hi");
-		              });
+          cards.enter().append("rect")
+              .attr("x", function(d) { return ((d.x - (d.x % xIncrement)) / xIncrement) * gridSize; })
+              .attr("y", function(d) { return ((d.y - (d.y % yIncrement)) / yIncrement) * gridSize; })
+              .attr("rx", 4)
+              .attr("ry", 4)
+              .attr("class", "bucket bordered")
+              .attr("width", gridSize)
+              .attr("height", gridSize)
+              .style("fill", colors[0])
+              .on("click", function(d) {
+              	var ntmp = num;
+		  		if (Number(num) % 2 == 1) {
+		  			num = String(Number(num) + 1);
+		  		}
+		  		else {
+		  			num = String(Number(num) - 1);
+		  		}
+		  		histogram(xvar, yvar, data, num);
+		  		num = ntmp;
+              });
 
-		          cards.transition().duration(1000)
-		              .style("fill", function(d) { return colorScale(d.val); });
+	          cards.transition().duration(1000)
+	              .style("fill", function(d) { return colorScale(d.val); });
 
-		          cards.select("title").text(function(d) { return d.val; });
-		          
-		          cards.exit().remove();
+	          cards.select("title").text(function(d) { return d.val; });
+	          
+	          cards.exit().remove();
          }
 
          else if (getType(xvar) && !getType(yvar)) {
@@ -471,7 +508,6 @@ function heatmap(xvar, yvar, data, num) {
 
 		 	totalBuckets = [];
 			xsum = 0;
-			//ysum = 0;
 			for (var i = 0; i < buckets; i++) {
 				for (var j = 0; j < y.length; j++) {
 					obj = { x: xsum, y: y[j], ycoor: j, xcoor: 0, val: 0 };
@@ -480,15 +516,10 @@ function heatmap(xvar, yvar, data, num) {
 				xsum += xIncrement;
 			}
 
-			console.log(totalBuckets);
-
-
 			var xVals = [];
 		 	for (var j = 0; j < totalBuckets.length; j = j + y.length) {
 		 		xVals.push(totalBuckets[j].x);
 		 	}
-
-		 	console.log(xVals);
 
 			data.forEach(function (d) {
 				var truey = d[yvar];
@@ -500,20 +531,16 @@ function heatmap(xvar, yvar, data, num) {
 
 				for (var i = 0; i < totalBuckets.length; i++) {
 					if (totalBuckets[i].y === truey) {
-						var index = i + xIndex;
+						var index = (xIndex * y.length) + i;
 						if (index >= totalBuckets.length) {
 							index = totalBuckets.length - 1;
 						}
 						totalBuckets[index].val = totalBuckets[index].val + 1;
+						break;
 					}
 				}
 
 		 	});
-
-
-
-			console.log(totalBuckets);
-
 
 		 	var xLabels = chart.selectAll(".xLabel")
 		          .data(xVals)
@@ -553,7 +580,27 @@ function heatmap(xvar, yvar, data, num) {
 		              .attr("height", gridSize)
 		              .style("fill", colors[0])
 		              .on("click", function(d) {
-		              	console.log("hi");
+
+		              	var dtmp = data;
+						data = data.filter(function(item) {
+							for (var i = d.x; i <= d.x + xIncrement; i++) {
+								if (Math.round(item[xvar]) === i) {
+									if (item[yvar] === d.y) {
+										return item;
+									}
+								}
+							}
+						});
+						var ntmp = num;
+				  		if (Number(num) % 2 == 1) {
+				  			num = String(Number(num) + 1);
+				  		}
+				  		else {
+				  			num = String(Number(num) - 1);
+				  		}
+				  		histogram(xvar, yvar, data, num);
+				  		num = ntmp;
+				  		data = dtmp;
 		              });
 
 		          cards.transition().duration(1000)
@@ -622,7 +669,25 @@ function heatmap(xvar, yvar, data, num) {
 		              .attr("height", gridSize)
 		              .style("fill", colors[0])
 		              .on("click", function(d) {
-		              	console.log("hi");
+
+		              	var dtmp = data;
+						data = data.filter(function(item) {
+								if (item[xvar] === d.x) {
+									if (item[yvar] === d.y) {
+										return item;
+									}
+								}
+						});
+						var ntmp = num;
+				  		if (Number(num) % 2 == 1) {
+				  			num = String(Number(num) + 1);
+				  		}
+				  		else {
+				  			num = String(Number(num) - 1);
+				  		}
+				  		barChart(xvar, yvar, data, num);
+				  		num = ntmp;
+				  		data = dtmp;
 		              });
 
 		          cards.transition().duration(1000)
@@ -657,106 +722,34 @@ function heatmap(xvar, yvar, data, num) {
 
 };
 
-function histogram(xvar, yvar, data, num) {
-
-	$("#innerchart" + num).empty();
-
-	console.log(data);
-	console.log(xvar);
-
-	var margin = {top: 40, right: 20, bottom: 20, left: 30},
-		  width = $("#innerchart" + num).width() - margin.left - margin.right,
-		  height = $("#innerchart" + num).height() - margin.top - margin.bottom;
-
-	var x = d3.scale.linear()
-	    .domain([d3.min(data, function(d) { return d[xvar] }), d3.max(data, function(d) { return d[xvar]; })])
-	    .range([0, width]);
-
-	var xVals = data.map(function(d) { return d[xvar]});
-
-	//xVals = xVals.filter(function(item, pos) {
-    //	return xVals.indexOf(item) == pos;
-	//});
-
-	console.log(xVals);
-
-
-
-	for (var i = xVals.length - 1; i >= 0; i--) {
-    	if(xVals[i] === 0) {
-       		xVals.splice(i, 1);
-    	}
-	}
-
-	var bardata = d3.layout.histogram()
-	    .bins(x.ticks(20))
-	    (xVals);
-
-	var y = d3.scale.linear()
-	    .domain([0, d3.max(bardata, function(d) { return d.y; })])
-	    .range([height, 0]);
-
-	var xAxis = d3.svg.axis()
-	    .scale(x)
-	    .orient("bottom");
-
-	var chart = d3.select("#innerchart" + num).append("svg")
-	    .attr("width", width + margin.left + margin.right)
-	    .attr("height", height + margin.top + margin.bottom)
-	  .append("g")
-	    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-	var bar = chart.selectAll(".bar")
-	    .data(bardata)
-	  .enter().append("g")
-	    .attr("class", "bar")
-	    .attr("transform", function(d) { return "translate(" + x(d.x) + "," + y(d.y) + ")"; });
-
-	console.log(bardata);
-
-	bar.append("rect")
-	    .attr("x", 1)
-	    .attr("width", x(bardata[0].dx + bardata[0].x) - 1)
-	    .attr("height", function(d) { return height - y(d.y); });
-
-	bar.append("text")
-	    .attr("dy", ".75em")
-	    .attr("y", -14)
-	    .attr("x", x(bardata[0].x + bardata[0].dx) / 2)
-	    .style("fill", "black")
-	    .attr("text-anchor", "middle")
-	    .text(function(d) { return d.y; });
-
-	chart.append("g")
-	    .attr("class", "x axis")
-	    .attr("transform", "translate(0," + height + ")")
-	    .call(xAxis);
-};
+/**
+* This function, given data, the chart number, and an x- and y-variable constructs a scatterplot.
+*/
 
 function scatterplot(xvar, yvar, data, num) {
 	var margin = {top: 40, right: 20, bottom: 20, left: 30},
 	  width = $("#innerchart" + num).width() - margin.left - margin.right,
 	  height = $("#innerchart" + num).height() - margin.top - margin.bottom;
 
-var x = d3.scale.linear()
-    .range([0, width]);
+	var x = d3.scale.linear()
+	    .range([0, width]);
 
-var y = d3.scale.linear()
-    .range([height, 0]);
+	var y = d3.scale.linear()
+	    .range([height, 0]);
 
-var xAxis = d3.svg.axis()
-    .scale(x)
-    .orient("bottom");
+	var xAxis = d3.svg.axis()
+	    .scale(x)
+	    .orient("bottom");
 
-var yAxis = d3.svg.axis()
-    .scale(y)
-    .orient("left");
+	var yAxis = d3.svg.axis()
+	    .scale(y)
+	    .orient("left");
 
-var chart = d3.select("#innerchart" + num).append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+	var chart = d3.select("#innerchart" + num).append("svg")
+	    .attr("width", width + margin.left + margin.right)
+	    .attr("height", height + margin.top + margin.bottom)
+	  .append("g")
+	    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
   x.domain(d3.extent(data, function(d) { return d[xvar]; })).nice();
   y.domain(d3.extent(data, function(d) { return d[yvar]; })).nice();
@@ -795,6 +788,7 @@ var chart = d3.select("#innerchart" + num).append("svg")
                .duration(500)
                .style("opacity", 0);
       }).on("click", function() {
+      	var ntmp = num;
   		if (Number(num) % 2 == 1) {
   			num = String(Number(num) + 1);
   		}
@@ -802,5 +796,6 @@ var chart = d3.select("#innerchart" + num).append("svg")
   			num = String(Number(num) - 1);
   		}
   		histogram(xvar, yvar, data, num);
+  		num = ntmp;
   	});
 };

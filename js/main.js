@@ -10,7 +10,6 @@ var optionsattr = [];
 function getType(x) {
 	for (var i = 0; i < optionsattr.length; i++) {
 		if (optionsattr[i].name === x) {
-
 			return optionsattr[i].type;
 		}
 	}
@@ -31,7 +30,7 @@ function selectOption(x) {
 		for (var j = 0; j < data.length; j++) {
 			var s = data[j].split("=");
 			if (s[0] === "Names") {
-				var c = s[1].split(",");
+				var c = s[1].replace(/\r/g, "").split(",");
 				columns = columns.concat(c);
 			}
 			if (s[0] === "IsDisplayed" && columns.length != 0) {
@@ -46,6 +45,7 @@ function selectOption(x) {
 			if (s[0] === "DataTypes" && columns.length != 0) {
 				var a = s[1].toLowerCase().split(",");
 				for (var i = 0; i < a.length; i++) {
+					a[i] = a[i].replace(/\r/g, "");
 					if (a[i] === "int" || a[i] === "float") {
 						optionsattr.push({ name: columns[i], type: 1 });
 					}
@@ -94,7 +94,7 @@ function createAxisOptions(attr) {
 }
 
 /**
-This function handles redrawing the chart every time that a new option/axis is selected for one of the charts.
+* This function handles redrawing the chart every time that a new option/axis is selected for one of the charts.
 */
 
 function chartSelectOption(option) {
@@ -119,7 +119,10 @@ function chartSelectOption(option) {
 }
 
 /**
-Begin drawing the chart by drawing the axis.
+* Given two variables (contained in axis1 and axis2), the name of the file, the possible
+* restraint from the filter, and type of restraint (brush vs filter), this function decides
+* what chart to draw based on whether the variables are the same and whether or not the 
+* variables are numeric.
 */
 
 function drawChart(axis1, axis2, chart, file, restraint, type) {
@@ -139,22 +142,14 @@ function drawChart(axis1, axis2, chart, file, restraint, type) {
 		}, function(data) {
 
 			if (xvar == yvar) {
-
-				//if (getType(xvar) && getType(yvar)) { 
-				//	lineChart(xvar, yvar, data, num);
-				//}
-				//else {
-					heatmap(xvar, yvar, data, num);
-				//}
-
+				heatmap(xvar, yvar, data, num);
 			}
 			else {
 				if (getType(xvar) && getType(yvar)) { 
-					//histogram(xvar, yvar, data, num);
 					scatterplot(xvar, yvar, data, num);
 				}
 				else if (!getType(xvar) && getType(yvar)) {
-					barChart(xvar, yvar, data, num);
+					stackedbarChart(xvar, yvar, data, num);
 				}
 				else {
 					heatmap(xvar, yvar, data, num);
@@ -179,26 +174,15 @@ function drawChart(axis1, axis2, chart, file, restraint, type) {
 
 			return undefined;
 		}, function(data) {
-
-			console.log(data);
-
 			if (xvar == yvar) {
-
-				//if (getType(xvar) && getType(yvar)) { 
-				//	lineChart(xvar, yvar, data, num);
-				//}
-				//else {
-					heatmap(xvar, yvar, data, num);
-				//}
-
+				heatmap(xvar, yvar, data, num);
 			}
 			else {
 				if (getType(xvar) && getType(yvar)) { 
-					//histogram(xvar, yvar, data, num);
 					scatterplot(xvar, yvar, data, num);
 				}
 				else if (!getType(xvar) && getType(yvar)) {
-					barChart(xvar, yvar, data, num);
+					stackedbarChart(xvar, yvar, data, num);
 				}
 				else {
 					heatmap(xvar, yvar, data, num);
@@ -209,31 +193,29 @@ function drawChart(axis1, axis2, chart, file, restraint, type) {
 
 }
 
+/**
+* This is the function that gets called when a filter is entered into the box.
+*/
+
 function restrainfilterChart(x) {
 	var num = $(x).val();
-	//console.log(num);
 	var xvar = $("#xaxis" + num).val();
 	var yvar = $("#yaxis" + num).val();
-	//console.log(xvar);
-	//console.log(yvar);
-	//num, $('#dataset').val()
 	var restraint = $("#filter" + num).val();
-	//console.log(restraint);
 	drawChart(xvar, yvar, num, $('#dataset').val(), restraint, "filter");
 	$("#filter" + num).val("");
 
 }
 
+/**
+* This is the function that gets called when a brush is entered into the box.
+*/
+
 function brushChart(x) {
 	var num = $(x).val();
-	//console.log(num);
 	var xvar = $("#xaxis" + num).val();
 	var yvar = $("#yaxis" + num).val();
-	//console.log(xvar);
-	//console.log(yvar);
-	//num, $('#dataset').val()
 	var restraint = $("#brush" + num).val();
-	//console.log(restraint);
 	drawChart(xvar, yvar, num, $('#dataset').val(), restraint, "brush");
 	$("#brush" + num).val("");
 }
