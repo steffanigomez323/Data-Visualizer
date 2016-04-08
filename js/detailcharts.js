@@ -1,6 +1,7 @@
 /**
 * This function, given data, the chart number, and an x- and y-variable constructs a histogram.
-* This is displayed when a stacked bar or a point on a scatterplot is clicked upon.
+* This is displayed when a stacked bar, a square on a heapmap, or a point on a scatterplot is 
+* clicked upon.
 */
 
 function histogram(xvar, yvar, data, num) {

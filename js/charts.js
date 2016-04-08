@@ -586,21 +586,24 @@ function heatmap(xvar, yvar, data, num) {
 							for (var i = d.x; i <= d.x + xIncrement; i++) {
 								if (Math.round(item[xvar]) === i) {
 									if (item[yvar] === d.y) {
+										console.log("here again");
 										return item;
 									}
 								}
 							}
 						});
-						var ntmp = num;
-				  		if (Number(num) % 2 == 1) {
-				  			num = String(Number(num) + 1);
-				  		}
-				  		else {
-				  			num = String(Number(num) - 1);
-				  		}
-				  		histogram(xvar, yvar, data, num);
-				  		num = ntmp;
-				  		data = dtmp;
+						if (data.length != 0) {
+							var ntmp = num;
+					  		if (Number(num) % 2 == 1) {
+					  			num = String(Number(num) + 1);
+					  		}
+					  		else {
+					  			num = String(Number(num) - 1);
+					  		}
+					  		histogram(xvar, yvar, data, num);
+					  		num = ntmp;
+					  		data = dtmp;
+					  	}
 		              });
 
 		          cards.transition().duration(1000)
